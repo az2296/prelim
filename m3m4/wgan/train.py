@@ -90,6 +90,9 @@ def main():
             g_optim = torch.optim.AdamW(g.parameters(), lr = args.lr_g, betas = (args.beta1_g, args.beta2_g), weight_decay = args.weight_decay_g)
             c_optim = torch.optim.AdamW(critic.parameters(), lr = args.lr_c, betas = (args.beta1_c, args.beta2_c), weight_decay = args.weight_decay_c)
 
+            g_scheduler = torch.optim.lr_scheduler.ExponentialLR(g_optim, gamma=args.lr_decay_g)
+            c_scheduler = torch.optim.lr_scheduler.ExponentialLR(c_optim, gamma=args.lr_decay_c)
+
 
             best_val_mse = math.inf
             bad_epochs = 0
@@ -223,6 +226,9 @@ def main():
                             f"Epoch {epoch + 1:03d} | "
                             f"Train time: {epoch_time:.2f}s"
                         )
+
+                g_scheduler.step()
+                c_scheduler.step()
 
             sync_device(device)
             total_time = time.time() - total_start

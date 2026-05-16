@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument("--num-train", type=int, default=5000)
     parser.add_argument("--num-val", type=int, default=1000)
     parser.add_argument("--num-test", type=int, default=1000)
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--n-epochs", type=int, default=600)
     parser.add_argument("--patience", type=int, default=100)
     parser.add_argument("--print-every", type=int, default=1)
@@ -26,6 +26,9 @@ def parse_args():
     parser.add_argument("--beta2-c", type=float, default=0.9)
     parser.add_argument("--weight-decay-g", type=float, default=0.0)
     parser.add_argument("--weight-decay-c", type=float, default=0.0)
+    parser.add_argument("--lr-decay-g", type = float, default=0.995)
+    parser.add_argument("--lr-decay-c", type = float, default = 0.995)
+
 
     parser.add_argument("--n-critic", type=int, default=5)
     parser.add_argument("--lambda-gp", type=float, default=10.0)
