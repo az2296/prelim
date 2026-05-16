@@ -1,0 +1,12 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+*.pyo
+
+.venv/
+venv/
+env/
+
+metrics.csv
+*.log
