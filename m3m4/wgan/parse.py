@@ -1,14 +1,13 @@
 import argparse
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train a conditional WGAN on M1/M2.")
+    parser = argparse.ArgumentParser(description="Train a conditional WGAN on M3/M4.")
 
-    parser.add_argument("--model", choices=["M1", "M2"], default="M1")
-    parser.add_argument("--x-dim", type=int, default=5)
+    parser.add_argument("--model", choices=["M3", "M4"], default="M3")
     parser.add_argument("--z-dim", type=int, default=100)
     parser.add_argument("--start-seed", type=int, default=1)
-    parser.add_argument("--end-seed", type=int, default=50)
-    parser.add_argument("--device", choices=["cpu", "cuda", "mps"], default="cpu")
+    parser.add_argument("--end-seed", type=int, default=100)
+    parser.add_argument("--device", choices=["cpu", "cuda", "mps"], default="mps")
     parser.add_argument("--csv", type=str, default="results.csv")
 
     parser.add_argument("--num-train", type=int, default=5000)
@@ -17,7 +16,7 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--n-epochs", type=int, default=600)
     parser.add_argument("--patience", type=int, default=100)
-    parser.add_argument("--print-every", type=int, default=100)
+    parser.add_argument("--print-every", type=int, default=1)
 
     parser.add_argument("--lr-g", type=float, default=1e-3)
     parser.add_argument("--lr-c", type=float, default=1e-3)
