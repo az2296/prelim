@@ -7,7 +7,7 @@ def parse_args():
     parser.add_argument("--x-dim", type=int, default=5)
     parser.add_argument("--z-dim", type=int, default=100)
     parser.add_argument("--start-seed", type=int, default=1)
-    parser.add_argument("-end-seed", type=int, default=1)
+    parser.add_argument("--end-seed", type=int, default=100)
     parser.add_argument("--device", choices=["cpu", "cuda", "mps"], default="cpu")
     parser.add_argument("--csv", type=str, default="results.csv")
 
@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--n-epochs", type=int, default=600)
     parser.add_argument("--patience", type=int, default=50)
-    parser.add_argument("--print-every", type=int, default=10)
+    parser.add_argument("--print-every", type=int, default=100)
 
     parser.add_argument("--lr-g", type=float, default=1e-3)
     parser.add_argument("--lr-c", type=float, default=1e-3)
@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("--leaky-slope", type=float, default=0.01)
 
     parser.add_argument("--j-train",  type=int, default=5)
-    parser.add_argument("--j-eval", type=int, default=20)
+    parser.add_argument("--j-eval", type=int, default=100)
     parser.add_argument("--j-test", type=int, default=1000)
 
 

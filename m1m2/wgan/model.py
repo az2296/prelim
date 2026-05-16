@@ -38,11 +38,14 @@ def c_loss(real_scores, fake_scores):
 
 def g_loss(fake_scores, fake_y, y, recon_weight = 0.1):
     
-    mean_fake_y = fake_y.mean(dim=0)
-    
-    recon_loss = ((y.squeeze(1)- mean_fake_y) ** 2).mean()
-
     adv_loss = -fake_scores.mean()
+
+    if recon_weight == 0:
+        return adv_loss
+
+    mean_fake_y = fake_y.mean(dim=0)
+
+    recon_loss = ((y.squeeze(1)- mean_fake_y) ** 2).mean()
 
     return (1 - recon_weight) * adv_loss + recon_weight * recon_loss
 
