@@ -90,6 +90,7 @@ def main():
 
             best_val_mse = math.inf
             bad_epochs = 0
+            use_early_stopping = args.patience < args.n_epochs
 
             loader_rng = torch.Generator()
             loader_rng.manual_seed(seed)
@@ -176,7 +177,7 @@ def main():
                 sync_device(device)
                 epoch_time = time.time() - epoch_start
 
-                if args.patience < args.n_epochs:
+                if use_early_stopping:
                     val_mse = eval_mse(
                     g=g_ema,
                     data=val,
@@ -224,7 +225,8 @@ def main():
             total_time = time.time() - total_start
 
 
-            g_ema.load_state_dict(best_g_ema_state)
+            if use_early_stopping:
+                g_ema.load_state_dict(best_g_ema_state)
 
 
             test_metrics = eval_test_metrics(
@@ -246,7 +248,10 @@ def main():
             writer.writerow(row)
             csv_file.flush()
 
-            print(f"Seed {seed} | Best Val MSE: {best_val_mse:.4f}")
+            if use_early_stopping:
+                print(f"Seed {seed} | Best Val MSE: {best_val_mse:.4f}")
+            else:
+                print(f"Seed {seed} | Early stopping disabled; using final EMA model")
             print(f"Seed {seed} | Test MSE: {test_metrics['mse']:.4f}")
             print(f"Seed {seed} | Test L1: {test_metrics['l1']:.4f}")
             print(f"Seed {seed} | Test MSE(Mean): {test_metrics['mse_mean']:.4f}")
