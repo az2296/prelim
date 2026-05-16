@@ -176,42 +176,49 @@ def main():
                 sync_device(device)
                 epoch_time = time.time() - epoch_start
 
+                if args.patience < args.n_epochs:
+                    val_mse = eval_mse(
+                    g=g_ema,
+                    data=val,
+                    device=device,
+                    y_mean=y_mean,
+                    y_std=y_std,
+                    z_dim=args.z_dim,
+                    J=args.j_eval
+                )
 
-                val_mse = eval_mse(
-                g=g_ema,
-                data=val,
-                device=device,
-                y_mean=y_mean,
-                y_std=y_std,
-                z_dim=args.z_dim,
-                J=args.j_eval
-            )
-
-                if (epoch + 1) % args.print_every == 0 or epoch == 0:
-                    print(
-                        f"Seed {seed} | "
-                        f"Epoch {epoch + 1:03d} | "
-                        f"Val MSE: {val_mse:.4f} | "
-                        f"Train time: {epoch_time:.2f}s"
-                    )
+                    if (epoch + 1) % args.print_every == 0 or epoch == 0:
+                        print(
+                            f"Seed {seed} | "
+                            f"Epoch {epoch + 1:03d} | "
+                            f"Val MSE: {val_mse:.4f} | "
+                            f"Train time: {epoch_time:.2f}s"
+                        )
 
 
-                if val_mse < best_val_mse:
-                    best_val_mse = val_mse
-                    bad_epochs = 0
+                    if val_mse < best_val_mse:
+                        best_val_mse = val_mse
+                        bad_epochs = 0
 
-                    best_g_ema_state = copy.deepcopy(g_ema.state_dict())
+                        best_g_ema_state = copy.deepcopy(g_ema.state_dict())
 
+                    else:
+                        bad_epochs += 1
+
+                    if bad_epochs >= args.patience:
+                        print(
+                            f"Seed {seed} | "
+                            f"Early stopping at epoch {epoch + 1} | "
+                            f"Best Val MSE: {best_val_mse:.4f}"
+                        )
+                        break
                 else:
-                    bad_epochs += 1
-
-                if bad_epochs >= args.patience:
-                    print(
-                        f"Seed {seed} | "
-                        f"Early stopping at epoch {epoch + 1} | "
-                        f"Best Val MSE: {best_val_mse:.4f}"
-                    )
-                    break
+                    if (epoch + 1) % args.print_every == 0 or epoch == 0:
+                        print(
+                            f"Seed {seed} | "
+                            f"Epoch {epoch + 1:03d} | "
+                            f"Train time: {epoch_time:.2f}s"
+                        )
 
             sync_device(device)
             total_time = time.time() - total_start
