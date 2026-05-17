@@ -125,12 +125,13 @@ def main():
                     for _ in range(args.n_critic):
                         c_optim.zero_grad(set_to_none=True)
 
-                        fake_y = mc_generate(
-                            g=g,
-                            x=x_batch,
-                            z_dim=args.z_dim,
-                            J=args.j_train
-                        )  
+                        with torch.no_grad():
+                            fake_y = mc_generate(
+                                g=g,
+                                x=x_batch,
+                                z_dim=args.z_dim,
+                                J=args.j_train
+                            )  
 
                         x_rep = x_batch.repeat(args.j_train, 1)
                         y_rep = y_batch.repeat(args.j_train, 1)

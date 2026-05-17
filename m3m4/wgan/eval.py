@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import math
 
-
+@torch.no_grad()
 def eval_mse(g, data, device, y_mean, y_std, z_dim=100, J=20):
     x, y_true = data
     x = x.to(device)
