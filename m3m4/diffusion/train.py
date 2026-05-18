@@ -29,7 +29,7 @@ def make_optimizers(model, args):
     muon_params = []
     adamw_params = []
     for name, p in model.named_parameters():
-        if p.ndim == 2 and name.startswith("net.") and not name.startswith("net.6"):
+        if name in {"net.2.weight", "net.4.weight"}:
             muon_params.append(p)
         else:
             adamw_params.append(p)
