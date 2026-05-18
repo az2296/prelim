@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument("--muon-lr", type=float, default=1e-3)
     parser.add_argument("--muon-weight-decay", type=float, default=0.0)
     parser.add_argument("--muon-momentum", type=float, default=0.95)
-    parser.add_argument("--muon-nesterov", default=True)
+    parser.add_argument("--muon-nesterov", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--muon-ns-steps", type=int, default=5)
     parser.add_argument("--muon-adjust-lr-fn", choices=["original", "match_rms_adamw"], default="match_rms_adamw")
 
