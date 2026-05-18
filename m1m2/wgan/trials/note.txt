@@ -1,0 +1,2 @@
+All trials are run with default hyperparameters in parse.py.
+Vanilla means --recon-weight 0.
