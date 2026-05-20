@@ -56,7 +56,7 @@ class Critic(nn.Module):
         return muon, adamw
 
 
-class GenFiLMBlock(nn.Module):
+class FiLMBlock(nn.Module):
 
     def __init__(self, dim, cond_dim, leaky_slope=0.01):
         super().__init__()
@@ -84,7 +84,7 @@ class FiLMGenerator(nn.Module):
         )
         self.in_proj = nn.Linear(z_dim, hidden)
         self.blocks = nn.ModuleList(
-            GenFiLMBlock(hidden, hidden, leaky_slope) for _ in range(n_blocks)
+            FiLMBlock(hidden, hidden, leaky_slope) for _ in range(n_blocks)
         )
         self.out = nn.Linear(hidden, y_dim)
 
@@ -121,7 +121,7 @@ class FiLMCritic(nn.Module):
         )
         self.in_proj = nn.Linear(y_dim, hidden)
         self.blocks = nn.ModuleList(
-            GenFiLMBlock(hidden, hidden, leaky_slope) for _ in range(n_blocks)
+            FiLMBlock(hidden, hidden, leaky_slope) for _ in range(n_blocks)
         )
         self.out = nn.Linear(hidden, 1)
 
