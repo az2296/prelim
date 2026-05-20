@@ -70,22 +70,7 @@ def make_optimizer(
             )
         ]
 
-    muon_params = []
-    adamw_params = []
-
-    for name, param in model.named_parameters():
-        is_hidden_conv = (
-            "weight_2d" in name
-            and "in_conv" not in name
-            and "out_conv" not in name
-            and "net.0" not in name
-        )
-        is_hidden_linear = name == "head.1.weight"
-
-        if is_hidden_conv or is_hidden_linear:
-            muon_params.append(param)
-        else:
-            adamw_params.append(param)
+    muon_params, adamw_params = model.muon_param_groups()
 
     return [
         torch.optim.Muon(

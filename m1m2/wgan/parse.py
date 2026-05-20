@@ -30,6 +30,29 @@ def parse_args():
     parser.add_argument("--lr-decay-g", type = float, default=0.995)
     parser.add_argument("--lr-decay-c", type = float, default = 0.995)
 
+    parser.add_argument("--optimizer-g", choices=["adamw", "muon"], default="adamw")
+    parser.add_argument("--optimizer-c", choices=["adamw", "muon"], default="adamw")
+    parser.add_argument("--muon-lr-g", type=float, default=1e-3)
+    parser.add_argument("--muon-lr-c", type=float, default=1e-3)
+    parser.add_argument("--muon-weight-decay-g", type=float, default=0.0)
+    parser.add_argument("--muon-weight-decay-c", type=float, default=0.0)
+    parser.add_argument("--muon-momentum-g", type=float, default=0.95)
+    parser.add_argument("--muon-momentum-c", type=float, default=0.95)
+    parser.add_argument("--muon-nesterov-g", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--muon-nesterov-c", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--muon-ns-steps-g", type=int, default=5)
+    parser.add_argument("--muon-ns-steps-c", type=int, default=5)
+    parser.add_argument(
+        "--muon-adjust-lr-fn-g",
+        choices=["original", "match_rms_adamw"],
+        default="match_rms_adamw",
+    )
+    parser.add_argument(
+        "--muon-adjust-lr-fn-c",
+        choices=["original", "match_rms_adamw"],
+        default="match_rms_adamw",
+    )
+
     parser.add_argument("--n-critic", type=int, default=5)
     parser.add_argument("--lambda-gp", type=float, default=10.0)
     parser.add_argument("--recon-weight", type=float, default=0.1)

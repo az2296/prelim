@@ -26,13 +26,7 @@ def make_optimizers(model, args):
             weight_decay=args.weight_decay,
         )]
 
-    muon_params = []
-    adamw_params = []
-    for name, p in model.named_parameters():
-        if name in {"net.2.weight", "net.4.weight"}:
-            muon_params.append(p)
-        else:
-            adamw_params.append(p)
+    muon_params, adamw_params = model.muon_param_groups()
 
     return [
         torch.optim.Muon(

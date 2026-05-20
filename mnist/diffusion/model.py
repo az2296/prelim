@@ -201,3 +201,12 @@ class Denoiser(nn.Module):
         h = self.rb4(torch.cat([self.up1(h), h2], dim=1), t_emb)
         h = self.rb5(torch.cat([self.up2(h), h1], dim=1), t_emb)
         return self.out_conv(F.silu(self.out_norm(h)))
+
+    def muon_param_groups(self):
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if "weight_2d" in name and "in_conv" not in name and "out_conv" not in name:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw

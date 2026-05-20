@@ -25,8 +25,8 @@ def parse_args():
     parser.add_argument("--lazy-gp", type=int, default=1)
     parser.add_argument("--recon-weight", type=float, default=0.1)
 
-    parser.add_argument("--optimizer-g", choices=["adamw", "muon"], default="muon")
-    parser.add_argument("--optimizer-c", choices=["adamw", "muon"], default="muon")
+    parser.add_argument("--optimizer-g", choices=["adamw", "muon"], default="adamw")
+    parser.add_argument("--optimizer-c", choices=["adamw", "muon"], default="adamw")
     parser.add_argument("--lr-g", type=float, default=1e-4)
     parser.add_argument("--lr-c", type=float, default=1e-4)
     parser.add_argument("--beta1-g", type=float, default=0.0)

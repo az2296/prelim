@@ -51,7 +51,17 @@ class Denoiser(nn.Module):
         t_emb = self.time_emb(t)
         inputs = torch.cat([x, y_t, t_emb], dim=1)
         return self.net(inputs)
-    
+
+    def muon_param_groups(self):
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in {"net.2.weight", "net.4.weight"}:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
 def make_scheduler(num_train_timesteps=1000):
     return DDIMScheduler(
         num_train_timesteps=num_train_timesteps,

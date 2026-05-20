@@ -17,6 +17,36 @@ def sync_device(device):
         torch.mps.synchronize()
 
 
+def make_optimizers(model, args):
+    if args.optimizer == "adamw":
+        return [torch.optim.AdamW(
+            model.parameters(),
+            lr=args.lr,
+            betas=(args.beta1, args.beta2),
+            weight_decay=args.weight_decay,
+        )]
+
+    muon_params, adamw_params = model.muon_param_groups()
+
+    return [
+        torch.optim.Muon(
+            muon_params,
+            lr=args.muon_lr,
+            weight_decay=args.muon_weight_decay,
+            momentum=args.muon_momentum,
+            nesterov=args.muon_nesterov,
+            ns_steps=args.muon_ns_steps,
+            adjust_lr_fn=args.muon_adjust_lr_fn,
+        ),
+        torch.optim.AdamW(
+            adamw_params,
+            lr=args.lr,
+            betas=(args.beta1, args.beta2),
+            weight_decay=args.weight_decay,
+        ),
+    ]
+
+
 def metrics_row(seed, test_metrics, total_time):
     row = {
         "seed": seed,
@@ -69,12 +99,7 @@ def main():
         scheduler = make_scheduler(args.num_train_timesteps)
         scheduler.config.clip_sample = False
 
-        optim = torch.optim.AdamW(
-            model.parameters(),
-            lr=args.lr,
-            betas=(args.beta1, args.beta2),
-            weight_decay=args.weight_decay,
-        )
+        optims = make_optimizers(model, args)
 
         best_val_loss = math.inf
         bad_epochs = 0
@@ -106,9 +131,11 @@ def main():
                 noise_pred = model(x_batch, y_t, t)
                 loss = nn.functional.mse_loss(noise_pred, noise)
 
-                optim.zero_grad(set_to_none=True)
+                for optim in optims:
+                    optim.zero_grad(set_to_none=True)
                 loss.backward()
-                optim.step()
+                for optim in optims:
+                    optim.step()
 
             sync_device(device)
             epoch_time = time.time() - epoch_start

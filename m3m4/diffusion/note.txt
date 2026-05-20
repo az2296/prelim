@@ -1,2 +1,0 @@
-All trials are run with default hyperparameters in parse.py.
-Except: M4 run with 50/10 num-train-timesteps and num-inference-steps, resp.

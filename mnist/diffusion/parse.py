@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     parser.add_argument("--weight-decay", type=float, default=0.0)
-    parser.add_argument("--optimizer", choices=["adamw", "muon"], default="adamw")
+    parser.add_argument("--optimizer", choices=["adamw", "muon"], default="muon")
     parser.add_argument("--muon-lr", type=float, default=1e-3)
     parser.add_argument("--muon-weight-decay", type=float, default=0.0)
     parser.add_argument("--muon-momentum", type=float, default=0.95)

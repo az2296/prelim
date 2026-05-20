@@ -35,14 +35,7 @@ def make_optimizer(model, args):
         )
         return [optimizer]
 
-    muon_params = []
-    adamw_params = []
-
-    for name, param in model.named_parameters():
-        if "weight_2d" in name and "in_conv" not in name and "out_conv" not in name:
-            muon_params.append(param)
-        else:
-            adamw_params.append(param)
+    muon_params, adamw_params = model.muon_param_groups()
 
     muon = torch.optim.Muon(
         muon_params,

@@ -19,6 +19,15 @@ class Generator(nn.Module):
         inputs = torch.cat([x,z], dim = 1)
         return self.net(inputs)
 
+    def muon_param_groups(self):
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in {"net.2.weight", "net.4.weight"}:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
 class Critic(nn.Module):
 
     def __init__(self, leaky_slope = 0.01):
@@ -36,7 +45,17 @@ class Critic(nn.Module):
     def forward(self, x, y):
         inputs = torch.cat([x,y], dim = 1)
         return self.net(inputs)
-    
+
+    def muon_param_groups(self):
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in {"net.2.weight", "net.4.weight"}:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
 def c_loss(real_scores, fake_scores):
     return fake_scores.mean() - real_scores.mean()
 

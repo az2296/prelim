@@ -119,6 +119,15 @@ class Generator(nn.Module):
         generated = torch.tanh(self.out_conv(h))
         return (1.0 - mask) * masked + mask * generated
 
+    def muon_param_groups(self):
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if "weight_2d" in name and "in_conv" not in name and "out_conv" not in name:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
 
 class Critic(nn.Module):
     def __init__(self, base_channels=64, slope=0.2):
@@ -144,6 +153,18 @@ class Critic(nn.Module):
     def forward(self, masked, mask, image):
         x = torch.cat([image, masked, mask], dim=1)
         return self.head(self.net(x)).view(-1)
+
+    def muon_param_groups(self):
+       
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            is_hidden_conv = "weight_2d" in name and "net.0" not in name
+            is_hidden_linear = name == "head.1.weight"
+            if is_hidden_conv or is_hidden_linear:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
 
 
 def gradient_penalty(critic, masked, mask, real, fake, lambda_gp):

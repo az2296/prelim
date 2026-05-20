@@ -19,6 +19,49 @@ def sync_device(device):
 
         torch.mps.synchronize()
 
+
+def make_optimizers(
+    model,
+    optimizer,
+    lr,
+    beta1,
+    beta2,
+    weight_decay,
+    muon_lr,
+    muon_weight_decay,
+    muon_momentum,
+    muon_nesterov,
+    muon_ns_steps,
+    muon_adjust_lr_fn,
+):
+    if optimizer == "adamw":
+        return [torch.optim.AdamW(
+            model.parameters(),
+            lr=lr,
+            betas=(beta1, beta2),
+            weight_decay=weight_decay,
+        )]
+
+    muon_params, adamw_params = model.muon_param_groups()
+
+    return [
+        torch.optim.Muon(
+            muon_params,
+            lr=muon_lr,
+            weight_decay=muon_weight_decay,
+            momentum=muon_momentum,
+            nesterov=muon_nesterov,
+            ns_steps=muon_ns_steps,
+            adjust_lr_fn=muon_adjust_lr_fn,
+        ),
+        torch.optim.AdamW(
+            adamw_params,
+            lr=lr,
+            betas=(beta1, beta2),
+            weight_decay=weight_decay,
+        ),
+    ]
+
 def metrics_row(seed, test_metrics, total_time):
     row = {
         "seed": seed,
@@ -87,11 +130,37 @@ def main():
 
 
 
-            g_optim = torch.optim.AdamW(g.parameters(), lr = args.lr_g, betas = (args.beta1_g, args.beta2_g), weight_decay = args.weight_decay_g)
-            c_optim = torch.optim.AdamW(critic.parameters(), lr = args.lr_c, betas = (args.beta1_c, args.beta2_c), weight_decay = args.weight_decay_c)
+            g_optims = make_optimizers(
+                g,
+                args.optimizer_g,
+                args.lr_g,
+                args.beta1_g,
+                args.beta2_g,
+                args.weight_decay_g,
+                args.muon_lr_g,
+                args.muon_weight_decay_g,
+                args.muon_momentum_g,
+                args.muon_nesterov_g,
+                args.muon_ns_steps_g,
+                args.muon_adjust_lr_fn_g,
+            )
+            c_optims = make_optimizers(
+                critic,
+                args.optimizer_c,
+                args.lr_c,
+                args.beta1_c,
+                args.beta2_c,
+                args.weight_decay_c,
+                args.muon_lr_c,
+                args.muon_weight_decay_c,
+                args.muon_momentum_c,
+                args.muon_nesterov_c,
+                args.muon_ns_steps_c,
+                args.muon_adjust_lr_fn_c,
+            )
 
-            g_scheduler = torch.optim.lr_scheduler.ExponentialLR(g_optim, gamma=args.lr_decay_g)
-            c_scheduler = torch.optim.lr_scheduler.ExponentialLR(c_optim, gamma=args.lr_decay_c)
+            g_schedulers = [torch.optim.lr_scheduler.ExponentialLR(o, gamma=args.lr_decay_g) for o in g_optims]
+            c_schedulers = [torch.optim.lr_scheduler.ExponentialLR(o, gamma=args.lr_decay_c) for o in c_optims]
 
 
             best_val_mse = math.inf
@@ -126,7 +195,8 @@ def main():
 
 
                     for _ in range(args.n_critic):
-                        c_optim.zero_grad(set_to_none=True)
+                        for o in c_optims:
+                            o.zero_grad(set_to_none=True)
 
                         with torch.no_grad():
                             fake_y = mc_generate(
@@ -153,10 +223,12 @@ def main():
                         )
 
                         loss_c.backward()
-                        c_optim.step()
+                        for o in c_optims:
+                            o.step()
 
 
-                    g_optim.zero_grad(set_to_none=True)
+                    for o in g_optims:
+                        o.zero_grad(set_to_none=True)
 
                     fake_y = mc_generate(
                         g=g,
@@ -177,7 +249,8 @@ def main():
                     )
 
                     loss_g.backward()
-                    g_optim.step()
+                    for o in g_optims:
+                        o.step()
 
                     update_ema(g, g_ema, decay=args.ema_decay)
 
@@ -228,8 +301,10 @@ def main():
                             f"Train time: {epoch_time:.2f}s"
                         )
 
-                g_scheduler.step()
-                c_scheduler.step()
+                for s in g_schedulers:
+                    s.step()
+                for s in c_schedulers:
+                    s.step()
 
             sync_device(device)
             total_time = time.time() - total_start
