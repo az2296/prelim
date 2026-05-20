@@ -1,1 +1,1 @@
-Diffusion checkpoints run with default arguments.
+All checkpoints run with default arguments.
