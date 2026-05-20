@@ -9,6 +9,8 @@ def parse_args():
     parser.add_argument("--end-seed", type=int, default=100)
     parser.add_argument("--device", choices=["cpu", "cuda", "mps"], default="mps")
     parser.add_argument("--csv", type=str, default="results.csv")
+    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--arch", choices=["mlp", "film"], default="mlp")
 
     parser.add_argument("--num-train", type=int, default=5000)
     parser.add_argument("--num-val", type=int, default=1000)

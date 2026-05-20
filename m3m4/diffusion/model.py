@@ -62,6 +62,72 @@ class Denoiser(nn.Module):
         return muon, adamw
 
 
+class FiLMBlock(nn.Module):
+
+    def __init__(self, dim, cond_dim):
+        super().__init__()
+        self.lin1 = nn.Linear(dim, dim)
+        self.lin2 = nn.Linear(dim, dim)
+        self.film = nn.Linear(cond_dim, 2 * dim)
+        self.act = nn.SiLU()
+
+    def forward(self, h, cond):
+        gamma, beta = self.film(cond).chunk(2, dim=1)
+        x = self.act(self.lin1(h))
+        x = x * (1 + gamma) + beta
+        x = self.act(self.lin2(x))
+        return h + x
+
+
+class FiLMDenoiser(nn.Module):
+
+    def __init__(self, x_dim=1, y_dim=2, t_dim=64, hidden=512, n_blocks=4):
+        super().__init__()
+        self.time_emb = TimeEmbedding(t_dim)
+        self.cond_mlp = nn.Sequential(
+            nn.Linear(x_dim + t_dim, hidden),
+            nn.SiLU(),
+            nn.Linear(hidden, hidden),
+        )
+        self.in_proj = nn.Linear(y_dim, hidden)
+        self.blocks = nn.ModuleList(FiLMBlock(hidden, hidden) for _ in range(n_blocks))
+        self.out = nn.Linear(hidden, y_dim)
+
+    def forward(self, x, y_t, t):
+        t_emb = self.time_emb(t)
+        cond = self.cond_mlp(torch.cat([x, t_emb], dim=1))
+        h = self.in_proj(y_t)
+        for blk in self.blocks:
+            h = blk(h, cond)
+        return self.out(h)
+
+    def muon_param_groups(self):
+        muon_names = {"cond_mlp.2.weight"}
+        for i in range(len(self.blocks)):
+            for w in ("lin1.weight", "lin2.weight", "film.weight"):
+                muon_names.add(f"blocks.{i}.{w}")
+
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in muon_names:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
+def make_denoiser(arch="mlp", t_dim=64):
+    if arch == "film":
+        return FiLMDenoiser(t_dim=t_dim)
+    return Denoiser(t_dim=t_dim)
+
+
+def update_ema(model, ema_model, decay=0.999):
+    with torch.no_grad():
+        for p, p_ema in zip(model.parameters(), ema_model.parameters()):
+            p_ema.data.mul_(decay).add_(p.data, alpha=1 - decay)
+
+
 def make_scheduler(num_train_timesteps=1000):
     return DDIMScheduler(
         num_train_timesteps=num_train_timesteps,

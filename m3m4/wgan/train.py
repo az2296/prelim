@@ -1,5 +1,5 @@
 from data import generate_samples
-from model import Generator, Critic, c_loss, g_loss, mc_generate, update_ema, gradient_penalty
+from model import make_generator, make_critic, c_loss, g_loss, mc_generate, update_ema, gradient_penalty
 from eval import eval_mse, eval_test_metrics
 from parse import parse_args
 import csv
@@ -119,8 +119,8 @@ def main():
             test = (x_test, y_test)
 
 
-            g = Generator(z_dim=args.z_dim, leaky_slope=args.leaky_slope)
-            critic = Critic(leaky_slope=args.leaky_slope)
+            g = make_generator(args.arch, z_dim=args.z_dim, leaky_slope=args.leaky_slope)
+            critic = make_critic(args.arch, leaky_slope=args.leaky_slope)
 
 
             g = g.to(device)
@@ -312,6 +312,22 @@ def main():
 
             if use_early_stopping:
                 g_ema.load_state_dict(best_g_ema_state)
+
+            if args.ckpt is not None:
+                torch.save(
+                    {
+                        "g_ema_state": g_ema.state_dict(),
+                        "y_mean": y_mean,
+                        "y_std": y_std,
+                        "arch": args.arch,
+                        "z_dim": args.z_dim,
+                        "leaky_slope": args.leaky_slope,
+                        "data_model": args.model,
+                        "seed": seed,
+                    },
+                    args.ckpt,
+                )
+                print(f"Seed {seed} | Saved checkpoint to {args.ckpt}")
 
 
             test_metrics = eval_test_metrics(

@@ -1,1 +1,3 @@
 All trials are run with default hyperparameters in parse.py. 
+
+Remark that for simplicity, we did not use EMA here (in contrast to all other experiments). We found that in other experiments, EMA helped.
