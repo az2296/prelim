@@ -1,4 +1,5 @@
 import argparse
+import os
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a conditional WGAN on M3/M4.")
@@ -10,6 +11,15 @@ def parse_args():
     parser.add_argument("--device", choices=["cpu", "cuda", "mps"], default="mps")
     parser.add_argument("--csv", type=str, default="results.csv")
     parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--hf-repo", default=os.environ.get("HF_CHECKPOINT_REPO"))
+    parser.add_argument(
+        "--hf-repo-type",
+        default=os.environ.get("HF_CHECKPOINT_REPO_TYPE", "model"),
+        choices=["model", "dataset", "space"],
+    )
+    parser.add_argument("--hf-prefix", default=os.environ.get("HF_CHECKPOINT_PREFIX"))
+    parser.add_argument("--hf-private", action="store_true")
+    parser.add_argument("--no-hf-upload", action="store_true")
     parser.add_argument("--arch", choices=["mlp", "film"], default="mlp")
 
     parser.add_argument("--num-train", type=int, default=5000)

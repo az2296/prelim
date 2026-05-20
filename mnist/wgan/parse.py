@@ -1,10 +1,20 @@
 import argparse
+import os
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--save-path", default="wgan.pt")
+    parser.add_argument("--hf-repo", default=os.environ.get("HF_CHECKPOINT_REPO"))
+    parser.add_argument(
+        "--hf-repo-type",
+        default=os.environ.get("HF_CHECKPOINT_REPO_TYPE", "model"),
+        choices=["model", "dataset", "space"],
+    )
+    parser.add_argument("--hf-prefix", default=os.environ.get("HF_CHECKPOINT_PREFIX"))
+    parser.add_argument("--hf-private", action="store_true")
+    parser.add_argument("--no-hf-upload", action="store_true")
 
     parser.add_argument("--train-size", type=int, default=20_000)
     parser.add_argument("--val-size", type=int, default=1_000)

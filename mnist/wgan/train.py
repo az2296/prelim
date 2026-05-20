@@ -1,5 +1,7 @@
 import copy
 import os
+from pathlib import Path
+import sys
 import time
 
 import torch
@@ -8,6 +10,12 @@ from torchvision.utils import save_image
 from data import get_dataloaders
 from model import Critic, Generator, gradient_penalty
 from parse import parse_args
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
+
+from scripts.hf_checkpoints import try_upload_checkpoint
 
 
 def sync(device):
@@ -254,6 +262,17 @@ def main():
             )
 
     save_checkpoint(args.save_path, generator, critic, ema_generator, g_optim, c_optim, args, epoch)
+    if args.hf_repo and not args.no_hf_upload:
+        hf_prefix = args.hf_prefix or "mnist/wgan"
+        uploaded = try_upload_checkpoint(
+            args.save_path,
+            repo_id=args.hf_repo,
+            repo_type=args.hf_repo_type,
+            private=args.hf_private,
+            prefix=hf_prefix,
+        )
+        if uploaded is not None:
+            print(f"Uploaded checkpoint to {args.hf_repo}:{uploaded}")
 
 
 if __name__ == "__main__":

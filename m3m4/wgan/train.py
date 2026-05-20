@@ -3,11 +3,19 @@ from model import make_generator, make_critic, c_loss, g_loss, mc_generate, upda
 from eval import eval_mse, eval_test_metrics
 from parse import parse_args
 import csv
+from pathlib import Path
+import sys
 import torch
 import torch.nn as nn
 import copy
 import math
 import time
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
+
+from scripts.hf_checkpoints import try_upload_checkpoint
 
 def sync_device(device):
 
@@ -328,6 +336,19 @@ def main():
                     args.ckpt,
                 )
                 print(f"Seed {seed} | Saved checkpoint to {args.ckpt}")
+                if args.hf_repo and not args.no_hf_upload:
+                    hf_prefix = args.hf_prefix or "m3m4/wgan"
+                    seed_path = seed if args.start_seed != args.end_seed else None
+                    uploaded = try_upload_checkpoint(
+                        args.ckpt,
+                        repo_id=args.hf_repo,
+                        repo_type=args.hf_repo_type,
+                        private=args.hf_private,
+                        prefix=hf_prefix,
+                        seed=seed_path,
+                    )
+                    if uploaded is not None:
+                        print(f"Seed {seed} | Uploaded checkpoint to {args.hf_repo}:{uploaded}")
 
 
             test_metrics = eval_test_metrics(

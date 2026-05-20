@@ -1,4 +1,6 @@
 import copy
+from pathlib import Path
+import sys
 import time
 
 import torch
@@ -7,6 +9,12 @@ import torch.nn.functional as F
 from data import get_dataloaders
 from model import Denoiser, make_noisy_batch, make_scheduler
 from parse import parse_args
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
+
+from scripts.hf_checkpoints import try_upload_checkpoint
 
 
 def loss_fn(pred, noise):
@@ -164,6 +172,17 @@ def main():
             save_checkpoint(
                 args.save_path, model, ema_model, optimizer, args, epoch, best_val
             )
+            if args.hf_repo and not args.no_hf_upload:
+                hf_prefix = args.hf_prefix or "mnist/diffusion"
+                uploaded = try_upload_checkpoint(
+                    args.save_path,
+                    repo_id=args.hf_repo,
+                    repo_type=args.hf_repo_type,
+                    private=args.hf_private,
+                    prefix=hf_prefix,
+                )
+                if uploaded is not None:
+                    print(f"Uploaded checkpoint to {args.hf_repo}:{uploaded}")
         else:
             epochs_without_improvement += 1
 
