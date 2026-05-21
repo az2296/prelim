@@ -1,5 +1,5 @@
 from data import generate_samples
-from model import Denoiser, make_scheduler, make_denoising_batch
+from model import Denoiser, make_scheduler, make_denoising_batch, update_ema
 from eval import eval_loss, eval_test_metrics
 from parse import parse_args
 import csv
@@ -96,6 +96,7 @@ def main():
         val = (x_val, y_val)
 
         model = Denoiser(x_dim=args.x_dim, t_dim=args.t_dim).to(device)
+        ema_model = copy.deepcopy(model).to(device)
         scheduler = make_scheduler(args.num_train_timesteps)
         scheduler.config.clip_sample = False
 
@@ -103,7 +104,7 @@ def main():
 
         best_val_loss = math.inf
         bad_epochs = 0
-        best_model_state = copy.deepcopy(model.state_dict())
+        best_model_state = copy.deepcopy(ema_model.state_dict())
         use_early_stopping = args.patience < args.n_epochs
 
         loader_rng = torch.Generator()
@@ -137,12 +138,14 @@ def main():
                 for optim in optims:
                     optim.step()
 
+                update_ema(model, ema_model, decay=args.ema_decay)
+
             sync_device(device)
             epoch_time = time.time() - epoch_start
 
             if use_early_stopping:
                 val_loss = eval_loss(
-                    model=model,
+                    model=ema_model,
                     data=val,
                     device=device,
                     scheduler=scheduler,
@@ -160,7 +163,7 @@ def main():
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     bad_epochs = 0
-                    best_model_state = copy.deepcopy(model.state_dict())
+                    best_model_state = copy.deepcopy(ema_model.state_dict())
 
                 else:
                     bad_epochs += 1
@@ -185,10 +188,10 @@ def main():
         total_time = time.time() - total_start
 
         if use_early_stopping:
-            model.load_state_dict(best_model_state)
+            ema_model.load_state_dict(best_model_state)
 
         test_metrics = eval_test_metrics(
-            model=model,
+            model=ema_model,
             data=test,
             device=device,
             scheduler=scheduler,

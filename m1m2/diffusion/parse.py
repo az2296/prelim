@@ -36,6 +36,8 @@ def parse_args():
         default="match_rms_adamw",
     )
 
+    parser.add_argument("--ema-decay", type=float, default=0.999)
+
     parser.add_argument("--num-train-timesteps", type=int, default=100)
     parser.add_argument("--num-inference-steps", type=int, default=20)
     parser.add_argument("--j-val", type=int, default=20)

@@ -60,6 +60,12 @@ class Denoiser(nn.Module):
         return muon, adamw
 
 
+def update_ema(model, ema_model, decay=0.999):
+    with torch.no_grad():
+        for p, p_ema in zip(model.parameters(), ema_model.parameters()):
+            p_ema.data.mul_(decay).add_(p.data, alpha=1 - decay)
+
+
 def make_scheduler(num_train_timesteps=1000):
     return DDIMScheduler(
         num_train_timesteps=num_train_timesteps,
