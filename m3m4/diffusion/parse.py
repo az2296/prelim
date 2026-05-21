@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument("--hf-prefix", default=os.environ.get("HF_CHECKPOINT_PREFIX"))
     parser.add_argument("--hf-private", action="store_true")
     parser.add_argument("--no-hf-upload", action="store_true")
-    parser.add_argument("--arch", choices=["mlp", "film"], default="mlp")
+    parser.add_argument("--arch", choices=["mlp", "film", "deep"], default="mlp")
     parser.add_argument("--ema-decay", type=float, default=0.999)
 
     parser.add_argument("--num-train", type=int, default=5000)

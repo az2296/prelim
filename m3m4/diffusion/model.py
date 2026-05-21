@@ -116,9 +116,60 @@ class FiLMDenoiser(nn.Module):
         return muon, adamw
 
 
+class ResBlock(nn.Module):
+
+    def __init__(self, dim):
+        super().__init__()
+        self.lin1 = nn.Linear(dim, dim)
+        self.lin2 = nn.Linear(dim, dim)
+        self.act = nn.SiLU()
+
+    def forward(self, h):
+        x = self.act(self.lin1(h))
+        x = self.act(self.lin2(x))
+        return h + x
+
+
+class DeepDenoiser(nn.Module):
+
+    def __init__(self, x_dim=1, y_dim=2, t_dim=64, hidden=512, n_blocks=8):
+        super().__init__()
+        self.time_emb = TimeEmbedding(t_dim)
+        self.in_proj = nn.Sequential(
+            nn.Linear(x_dim + y_dim + t_dim, hidden),
+            nn.SiLU(),
+            nn.Linear(hidden, hidden),
+        )
+        self.blocks = nn.ModuleList(ResBlock(hidden) for _ in range(n_blocks))
+        self.out = nn.Linear(hidden, y_dim)
+
+    def forward(self, x, y_t, t):
+        t_emb = self.time_emb(t)
+        h = self.in_proj(torch.cat([x, y_t, t_emb], dim=1))
+        for blk in self.blocks:
+            h = blk(h)
+        return self.out(h)
+
+    def muon_param_groups(self):
+        muon_names = {"in_proj.2.weight"}
+        for i in range(len(self.blocks)):
+            for w in ("lin1.weight", "lin2.weight"):
+                muon_names.add(f"blocks.{i}.{w}")
+
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in muon_names:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
 def make_denoiser(arch="mlp", t_dim=64):
     if arch == "film":
         return FiLMDenoiser(t_dim=t_dim)
+    if arch == "deep":
+        return DeepDenoiser(t_dim=t_dim)
     return Denoiser(t_dim=t_dim)
 
 

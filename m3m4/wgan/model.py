@@ -147,15 +147,103 @@ class FiLMCritic(nn.Module):
         return muon, adamw
 
 
+class ResBlock(nn.Module):
+
+    def __init__(self, dim, leaky_slope=0.01):
+        super().__init__()
+        self.lin1 = nn.Linear(dim, dim)
+        self.lin2 = nn.Linear(dim, dim)
+        self.act = nn.LeakyReLU(leaky_slope)
+
+    def forward(self, h):
+        x = self.act(self.lin1(h))
+        x = self.act(self.lin2(x))
+        return h + x
+
+
+class DeepGenerator(nn.Module):
+
+    def __init__(self, z_dim=100, leaky_slope=0.01, x_dim=1, y_dim=2, hidden=512, n_blocks=8):
+        super().__init__()
+        self.in_proj = nn.Sequential(
+            nn.Linear(x_dim + z_dim, hidden),
+            nn.LeakyReLU(leaky_slope),
+            nn.Linear(hidden, hidden),
+        )
+        self.blocks = nn.ModuleList(
+            ResBlock(hidden, leaky_slope) for _ in range(n_blocks)
+        )
+        self.out = nn.Linear(hidden, y_dim)
+
+    def forward(self, x, z):
+        h = self.in_proj(torch.cat([x, z], dim=1))
+        for blk in self.blocks:
+            h = blk(h)
+        return self.out(h)
+
+    def muon_param_groups(self):
+        muon_names = {"in_proj.2.weight"}
+        for i in range(len(self.blocks)):
+            for w in ("lin1.weight", "lin2.weight"):
+                muon_names.add(f"blocks.{i}.{w}")
+
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in muon_names:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
+class DeepCritic(nn.Module):
+
+    def __init__(self, leaky_slope=0.01, x_dim=1, y_dim=2, hidden=512, n_blocks=8):
+        super().__init__()
+        self.in_proj = nn.Sequential(
+            nn.Linear(x_dim + y_dim, hidden),
+            nn.LeakyReLU(leaky_slope),
+            nn.Linear(hidden, hidden),
+        )
+        self.blocks = nn.ModuleList(
+            ResBlock(hidden, leaky_slope) for _ in range(n_blocks)
+        )
+        self.out = nn.Linear(hidden, 1)
+
+    def forward(self, x, y):
+        h = self.in_proj(torch.cat([x, y], dim=1))
+        for blk in self.blocks:
+            h = blk(h)
+        return self.out(h)
+
+    def muon_param_groups(self):
+        muon_names = {"in_proj.2.weight"}
+        for i in range(len(self.blocks)):
+            for w in ("lin1.weight", "lin2.weight"):
+                muon_names.add(f"blocks.{i}.{w}")
+
+        muon, adamw = [], []
+        for name, p in self.named_parameters():
+            if name in muon_names:
+                muon.append(p)
+            else:
+                adamw.append(p)
+        return muon, adamw
+
+
 def make_generator(arch="mlp", z_dim=100, leaky_slope=0.01):
     if arch == "film":
         return FiLMGenerator(z_dim=z_dim, leaky_slope=leaky_slope)
+    if arch == "deep":
+        return DeepGenerator(z_dim=z_dim, leaky_slope=leaky_slope)
     return Generator(z_dim=z_dim, leaky_slope=leaky_slope)
 
 
 def make_critic(arch="mlp", leaky_slope=0.01):
     if arch == "film":
         return FiLMCritic(leaky_slope=leaky_slope)
+    if arch == "deep":
+        return DeepCritic(leaky_slope=leaky_slope)
     return Critic(leaky_slope=leaky_slope)
 
 
