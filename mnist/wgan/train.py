@@ -8,7 +8,7 @@ import torch
 from torchvision.utils import save_image
 
 from data import get_dataloaders
-from model import Critic, Generator, gradient_penalty
+from model import Critic, Generator, gradient_penalty, mc_generate
 from parse import parse_args
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -216,8 +216,13 @@ def main():
             fake = generator(masked, mask, z)
             fake_score = critic(masked, mask, fake)
             adv_loss = -fake_score.mean()
-            recon_loss = center_mse(fake, real, mask)
-            g_loss = (1 - args.recon_weight) * adv_loss + args.recon_weight * recon_loss
+
+            if args.recon_weight != 0:
+                fake_rec = mc_generate(generator, masked, mask, args.z_dim, args.j_train)
+                recon_loss = center_mse(fake_rec.mean(dim=0), real, mask)
+                g_loss = (1 - args.recon_weight) * adv_loss + args.recon_weight * recon_loss
+            else:
+                g_loss = adv_loss
 
             for opt in g_optim:
                 opt.zero_grad()

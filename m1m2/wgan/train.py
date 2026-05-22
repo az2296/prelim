@@ -225,20 +225,26 @@ def main():
                     for o in g_optims:
                         o.zero_grad(set_to_none=True)
 
-                    fake_y = mc_generate(
+                    fake_y_adv = mc_generate(
                         g=g,
                         x=x_batch,
                         z_dim=args.z_dim,
-                        J=args.j_train
-                    )  
+                        J=1
+                    )
+                    fake_scores = critic(x_batch, fake_y_adv.reshape(-1, 1))
 
-                    x_rep = x_batch.repeat(args.j_train, 1)
-
-                    fake_scores = critic(x_rep, fake_y.reshape(-1, 1))
+                    fake_y_rec = None
+                    if args.recon_weight != 0:
+                        fake_y_rec = mc_generate(
+                            g=g,
+                            x=x_batch,
+                            z_dim=args.z_dim,
+                            J=args.j_train
+                        )
 
                     loss_g = g_loss(
                         fake_scores=fake_scores,
-                        fake_y=fake_y,
+                        fake_y=fake_y_rec,
                         y=y_batch,
                         recon_weight=args.recon_weight
                     )

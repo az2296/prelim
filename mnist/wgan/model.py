@@ -185,3 +185,13 @@ def gradient_penalty(critic, masked, mask, real, fake, lambda_gp):
     )
     grad = torch.cat([grad_masked.flatten(1), grad_image.flatten(1)], dim=1)
     return lambda_gp * (grad.norm(2, dim=1) - 1).pow(2).mean()
+
+
+def mc_generate(generator, masked, mask, z_dim, J):
+    batch_size = masked.shape[0]
+    device = masked.device
+    masked_rep = masked.repeat(J, 1, 1, 1)
+    mask_rep = mask.repeat(J, 1, 1, 1)
+    z = torch.randn(J * batch_size, z_dim, device=device)
+    fake = generator(masked_rep, mask_rep, z)
+    return fake.view(J, batch_size, *fake.shape[1:])
