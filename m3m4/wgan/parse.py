@@ -65,13 +65,13 @@ def parse_args():
     )
 
 
-    parser.add_argument("--n-critic", type=int, default=5)
+    parser.add_argument("--n-critic", type=int, default=1)
     parser.add_argument("--lambda-gp", type=float, default=10.0)
     parser.add_argument("--recon-weight", type=float, default=0.1)
     parser.add_argument("--ema-decay", type=float, default=0.999)
     parser.add_argument("--leaky-slope", type=float, default=0.01)
 
-    parser.add_argument("--j-train",  type=int, default=5)
+    parser.add_argument("--j-train",  type=int, default=10)
     parser.add_argument("--j-eval", type=int, default=100)
     parser.add_argument("--j-test", type=int, default=1000)
 
