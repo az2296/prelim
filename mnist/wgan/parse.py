@@ -34,7 +34,7 @@ def parse_args():
     parser.add_argument("--lambda-gp", type=float, default=10.0)
     parser.add_argument("--lazy-gp", type=int, default=1)
     parser.add_argument("--recon-weight", type=float, default=0.1)
-    parser.add_argument("--j-train", type=int, default=5)
+    parser.add_argument("--j-train", type=int, default=1)
 
     parser.add_argument("--optimizer-g", choices=["adamw", "muon"], default="adamw")
     parser.add_argument("--optimizer-c", choices=["adamw", "muon"], default="adamw")
