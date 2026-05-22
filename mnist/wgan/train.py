@@ -38,7 +38,7 @@ def make_image(x, y):
 
 
 def center_mse(fake, real, mask):
-    return ((fake - real).pow(2) * mask).sum() / mask.sum()
+    return ((fake - real).pow(2) * mask).sum(dim=[1, 2, 3]).mean()
 
 
 def save_samples(path, ema_generator, x, y, z_dim, device, n_z=3):

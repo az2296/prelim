@@ -259,7 +259,7 @@ def g_loss(fake_scores, fake_y, y, recon_weight = 0.1):
 
     mean_fake_y = fake_y.mean(dim=0)
 
-    recon_loss = ((y - mean_fake_y) ** 2).mean()
+    recon_loss = ((y - mean_fake_y) ** 2).sum(dim=1).mean()
 
     return (1 - recon_weight) * adv_loss + recon_weight * recon_loss
 
