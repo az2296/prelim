@@ -200,21 +200,19 @@ def main():
                                 g=g,
                                 x=x_batch,
                                 z_dim=args.z_dim,
-                                J=args.j_train
-                            )  
+                                J=1
+                            )
 
-                        x_rep = x_batch.repeat(args.j_train, 1)
-                        y_rep = y_batch.repeat(args.j_train, 1)
                         fake_y_flat = fake_y.reshape(-1, 1).detach()
 
-                        fake_scores = critic(x_rep, fake_y_flat)
+                        fake_scores = critic(x_batch, fake_y_flat)
                         real_scores = critic(x_batch, y_batch)
 
                         loss_c = c_loss(real_scores, fake_scores)+ gradient_penalty(
                             critic=critic,
-                            x_real=x_rep,
-                            y_real=y_rep,
-                            x_fake=x_rep,
+                            x_real=x_batch,
+                            y_real=y_batch,
+                            x_fake=x_batch,
                             y_fake=fake_y_flat,
                             lambda_gp=args.lambda_gp
                         )
