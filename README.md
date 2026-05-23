@@ -17,7 +17,6 @@ The exact versions used for the results in this repo:
 | numpy            | 2.4.6   |
 | matplotlib       | 3.10.9  |
 | pandas           | 3.0.3   |
-| huggingface_hub  | 1.16.1  |
 
 Notes:
 
@@ -28,10 +27,11 @@ Notes:
   releases that ship `torch.optim.Muon` should also work.
 - **`diffusers`** is only used for `DDIMScheduler` in the diffusion training
   loops; any 0.30+ release should work, but 0.38.0 is what we ran.
-- **`huggingface_hub`** is only used by the optional checkpoint uploader in
-  `scripts/hf_checkpoints.py`. If you do not set `HF_CHECKPOINT_REPO` it is
-  not invoked at training time, but it is still imported, so keep it
-  installed.
+- **`huggingface_hub`** is *not* required to reproduce the results — it is
+  only used by `scripts/hf_checkpoints.py` to **upload** new checkpoints to
+  the Hub. Downloading existing checkpoints (see below) uses the public
+  HTTPS endpoint and needs nothing extra. Install `huggingface_hub` only if
+  you plan to push your own checkpoints.
 - **Device.** Training defaults to `--device mps` (Apple Silicon). `cuda` and
   `cpu` are also supported.
 
@@ -47,6 +47,19 @@ pip install \
     "numpy==2.4.6" \
     "matplotlib==3.10.9" \
     "pandas==3.0.3" \
-    "huggingface_hub==1.16.1" \
     jupyter
 ```
+
+## Checkpoints
+
+All trained checkpoints used in the notebooks are mirrored to the public
+Hugging Face repo above. To download them into the matching local paths
+(e.g. `m3m4/diffusion/notebook_ckpts/...`):
+
+```bash
+python scripts/download_checkpoints.py
+```
+
+The script uses stdlib only (no `huggingface_hub` install needed), skips
+files that already exist, and accepts `--filter m3m4` / `--filter mnist`
+to restrict the download, plus `--dry-run` and `--force`.
