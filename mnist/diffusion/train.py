@@ -45,22 +45,32 @@ def make_optimizer(model, args):
 
     muon_params, adamw_params = model.muon_param_groups()
 
-    muon = torch.optim.Muon(
-        muon_params,
-        lr=args.muon_lr,
-        weight_decay=args.muon_weight_decay,
-        momentum=args.muon_momentum,
-        nesterov=args.muon_nesterov,
-        ns_steps=args.muon_ns_steps,
-        adjust_lr_fn=args.muon_adjust_lr_fn,
-    )
+    if args.optimizer == "normuon":
+        from normuon import SingleDeviceNorMuon
+        matrix_opt = SingleDeviceNorMuon(
+            muon_params,
+            lr=args.muon_lr,
+            weight_decay=args.muon_weight_decay,
+            momentum=args.muon_momentum,
+            beta2=args.normuon_beta2,
+        )
+    else:
+        matrix_opt = torch.optim.Muon(
+            muon_params,
+            lr=args.muon_lr,
+            weight_decay=args.muon_weight_decay,
+            momentum=args.muon_momentum,
+            nesterov=args.muon_nesterov,
+            ns_steps=args.muon_ns_steps,
+            adjust_lr_fn=args.muon_adjust_lr_fn,
+        )
     adamw = torch.optim.AdamW(
         adamw_params,
         lr=args.lr,
         betas=(args.beta1, args.beta2),
         weight_decay=args.weight_decay,
     )
-    return [muon, adamw]
+    return [matrix_opt, adamw]
 
 
 def make_ema(model, args):

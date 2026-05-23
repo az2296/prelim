@@ -36,8 +36,17 @@ def make_optimizers(model, args):
 
     muon_params, adamw_params = model.muon_param_groups()
 
-    return [
-        torch.optim.Muon(
+    if args.optimizer == "normuon":
+        from normuon import SingleDeviceNorMuon
+        matrix_opt = SingleDeviceNorMuon(
+            muon_params,
+            lr=args.muon_lr,
+            weight_decay=args.muon_weight_decay,
+            momentum=args.muon_momentum,
+            beta2=args.normuon_beta2,
+        )
+    else:
+        matrix_opt = torch.optim.Muon(
             muon_params,
             lr=args.muon_lr,
             weight_decay=args.muon_weight_decay,
@@ -45,7 +54,10 @@ def make_optimizers(model, args):
             nesterov=args.muon_nesterov,
             ns_steps=args.muon_ns_steps,
             adjust_lr_fn=args.muon_adjust_lr_fn,
-        ),
+        )
+
+    return [
+        matrix_opt,
         torch.optim.AdamW(
             adamw_params,
             lr=args.lr,
