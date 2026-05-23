@@ -40,6 +40,15 @@ pip install \
     jupyter
 ```
 
+## Running the notebooks in VS Code
+
+When VS Code prompts you to "Select Kernel", choose **Python Environments
+→ `.venv` (Python 3.14.5)** — the venv created above. If it isn't listed,
+click "Select Another Kernel..." → "Python Environments..." and pick the
+interpreter at `.venv/bin/python` in the repo root. The first time you
+run a cell, VS Code may also offer to install `ipykernel` into the venv;
+accept it.
+
 ## Download checkpoints
 
 To reproduce the notebooks without retraining, download all checkpoints
