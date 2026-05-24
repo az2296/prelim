@@ -19,8 +19,8 @@ https://huggingface.co/az2296/prelim-checkpoints
 | pandas       | 3.0.3   |
 
 These are the versions used to produce the results in this repo. PyTorch
-must include `torch.optim.Muon`; we tested on 2.12.0, but earlier 2.x
-releases that ship it should also work. `diffusers` is only used for
+must include `torch.optim.Muon`; we tested on 2.12.0, but 2.9 or newer
+should also work. `diffusers` is only used for
 `DDIMScheduler`; any 0.30+ release should be fine.
 
 Training defaults to `--device mps`. `cuda` and `cpu` are also supported.
