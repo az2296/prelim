@@ -260,7 +260,8 @@ def main():
                 device,
             )
 
-    save_checkpoint(args.save_path, generator, critic, ema_generator, g_optim, c_optim, args, epoch)
+        save_checkpoint(args.save_path, generator, critic, ema_generator, g_optim, c_optim, args, epoch)
+
     if args.hf_repo and not args.no_hf_upload:
         hf_prefix = args.hf_prefix or "cifar10/wgan"
         uploaded = try_upload_checkpoint(
