@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import Compose, Normalize, ToTensor
+
+DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 
 
 def make_masked_batch(batch):
@@ -19,7 +23,7 @@ def make_masked_batch(batch):
     return x, y
 
 def get_dataloaders(
-    root="data",
+    root=DATA_ROOT,
     train_size=20_000,
     val_size=1_000,
     test_size=10_000,
