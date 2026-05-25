@@ -200,23 +200,24 @@ def main():
             save_checkpoint(
                 args.save_path, model, ema_model, optimizer, args, epoch, best_val
             )
-            if args.hf_repo and not args.no_hf_upload:
-                hf_prefix = args.hf_prefix or "cifar10/diffusion"
-                uploaded = try_upload_checkpoint(
-                    args.save_path,
-                    repo_id=args.hf_repo,
-                    repo_type=args.hf_repo_type,
-                    private=args.hf_private,
-                    prefix=hf_prefix,
-                )
-                if uploaded is not None:
-                    print(f"Uploaded checkpoint to {args.hf_repo}:{uploaded}")
         else:
             epochs_without_improvement += 1
 
         if epochs_without_improvement >= args.patience:
             print(f"early stopping after {epoch} epochs")
             break
+
+    if args.hf_repo and not args.no_hf_upload:
+        hf_prefix = args.hf_prefix or "cifar10/diffusion"
+        uploaded = try_upload_checkpoint(
+            args.save_path,
+            repo_id=args.hf_repo,
+            repo_type=args.hf_repo_type,
+            private=args.hf_private,
+            prefix=hf_prefix,
+        )
+        if uploaded is not None:
+            print(f"Uploaded checkpoint to {args.hf_repo}:{uploaded}")
 
 
 if __name__ == "__main__":
