@@ -23,7 +23,7 @@ must include `torch.optim.Muon`; we tested on 2.12.0, but 2.9 or newer
 should also work. `diffusers` is only used for
 `DDIMScheduler`; any 0.30+ release should be fine.
 
-Training defaults to `--device mps`. `cuda` and `cpu` are also supported.
+Training defaults to `--device mps`. 
 
 ## Install
 
