@@ -1,3 +1,0 @@
-All trials done using default settings. Note that the metrics reported in the CSVs are useless, we include them only because the original paper does. 
-
-Another point is that we use early stopping for WGAN, which is also questionable here; again, we  only do so because the original paper does. However, we point out that the inclusion (or lack of) early stopping does not matter much.
